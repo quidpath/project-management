@@ -1,0 +1,88 @@
+name: projects-prod
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_projects_prod
+    restart: unless-stopped
+    volumes:
+      - /mnt/ebs/projects/postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - projects_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: projects_redis
+    restart: unless-stopped
+    networks:
+      - projects_network
+
+  backend:
+    image: ${IMAGE_TAG}
+    container_name: projects-backend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8020:8007"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST:-postgres_projects_prod}
+      DB_PORT: ${DB_PORT:-5432}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      SECRET_KEY: ${SECRET_KEY}
+      PROJECTS_SERVICE_SECRET: ${PROJECTS_SERVICE_SECRET}
+      REDIS_URL: redis://redis:6379/0
+      DJANGO_SETTINGS_MODULE: projects_service.settings.prod
+      DJANGO_ENV: prod
+    volumes:
+      - /mnt/ebs/projects/media:/app/media
+      - /mnt/ebs/projects/staticfiles:/app/staticfiles
+    networks:
+      - projects_network
+      - quidpath_network
+
+  celery:
+    image: ${IMAGE_TAG}
+    container_name: projects-celery
+    restart: unless-stopped
+    command: celery -A projects_service worker -l info
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: redis://redis:6379/0
+      DJANGO_SETTINGS_MODULE: projects_service.settings.prod
+    networks:
+      - projects_network
+      - quidpath_network
+
+networks:
+  projects_network:
+    name: projects_prod_network
+    driver: bridge
+  quidpath_network:
+    external: true
+    name: tmp_quidpath_network
