@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-if [ -f /app/.env ]; then
+# Only load .env file if not in dev mode (docker-compose sets env vars directly)
+if [ -f /app/.env ] && [ "$DJANGO_ENV" != "dev" ]; then
   export $(grep -v '^#' /app/.env | tr -d '\r' | xargs)
 fi
 

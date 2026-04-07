@@ -33,6 +33,7 @@ class Issue(BaseModel):
     STATUS_CLOSED = "closed"
     STATUS_WONT_FIX = "wont_fix"
     STATUS_CHOICES = [
+        ("draft", "Draft"),
         (STATUS_OPEN, "Open"),
         (STATUS_IN_PROGRESS, "In Progress"),
         (STATUS_RESOLVED, "Resolved"),
@@ -52,7 +53,7 @@ class Issue(BaseModel):
     actual_result = models.TextField(blank=True)
 
     severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, default=SEVERITY_MAJOR)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_OPEN)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft", db_index=True)
 
     reporter_id = models.UUIDField(db_index=True)
     assignee_id = models.UUIDField(null=True, blank=True, db_index=True)
@@ -62,6 +63,9 @@ class Issue(BaseModel):
     environment = models.CharField(max_length=100, blank=True)
     version = models.CharField(max_length=50, blank=True)
     fix_version = models.CharField(max_length=50, blank=True)
+    drafted_at = models.DateTimeField(null=True, blank=True)
+    posted_at = models.DateTimeField(null=True, blank=True, help_text='When issue was opened/published')
+    posted_by = models.UUIDField(null=True, blank=True, help_text='User ID who posted the issue')
 
     class Meta:
         unique_together = [("project", "issue_number")]

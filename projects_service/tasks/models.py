@@ -62,6 +62,7 @@ class Task(BaseModel):
     STATUS_IN_REVIEW = "in_review"
     STATUS_DONE = "done"
     STATUS_CHOICES = [
+        ("draft", "Draft"),
         (STATUS_BACKLOG, "Backlog"),
         (STATUS_TODO, "To Do"),
         (STATUS_IN_PROGRESS, "In Progress"),
@@ -79,7 +80,7 @@ class Task(BaseModel):
     description = models.TextField(blank=True)
     task_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_TASK)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default=PRIORITY_MEDIUM)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_BACKLOG)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft", db_index=True)
 
     assignee_id = models.UUIDField(null=True, blank=True, db_index=True)
     reporter_id = models.UUIDField(db_index=True)
@@ -96,6 +97,9 @@ class Task(BaseModel):
 
     order = models.FloatField(default=0.0, help_text="Float order for drag-and-drop")
     is_billable = models.BooleanField(default=False)
+    drafted_at = models.DateTimeField(null=True, blank=True)
+    posted_at = models.DateTimeField(null=True, blank=True, help_text='When task was assigned to sprint')
+    posted_by = models.UUIDField(null=True, blank=True, help_text='User ID who posted the task')
 
     class Meta:
         unique_together = [("project", "task_number")]
