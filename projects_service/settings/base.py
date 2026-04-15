@@ -6,10 +6,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-projects-default-key")
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
+# Service authentication - own secret
 PROJECTS_SERVICE_SECRET = os.environ.get("PROJECTS_SERVICE_SECRET", "")
+# Cross-service secrets (used when calling other services)
+ERP_SERVICE_SECRET = os.environ.get("ERP_SERVICE_SECRET", "")
+INVENTORY_SERVICE_SECRET = os.environ.get("INVENTORY_SERVICE_SECRET", "")
+POS_SERVICE_SECRET = os.environ.get("POS_SERVICE_SECRET", "")
+CRM_SERVICE_SECRET = os.environ.get("CRM_SERVICE_SECRET", "")
+HRM_SERVICE_SECRET = os.environ.get("HRM_SERVICE_SECRET", "")
+BILLING_SERVICE_SECRET = os.environ.get("BILLING_SERVICE_SECRET", "")
 ERP_BACKEND_URL = os.environ.get("ERP_BACKEND_URL", "http://backend:8000")
 HRM_SERVICE_URL = os.environ.get("HRM_SERVICE_URL", "http://hrm_backend:8006")
 CRM_SERVICE_URL = os.environ.get("CRM_SERVICE_URL", "http://crm_backend:8005")
+INVENTORY_SERVICE_URL = os.environ.get("INVENTORY_SERVICE_URL", "http://inventory-backend:8000")
 
 DEBUG = False
 ALLOWED_HOSTS = []

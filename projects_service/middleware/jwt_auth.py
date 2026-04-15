@@ -9,9 +9,10 @@ logger = logging.getLogger(__name__)
 PUBLIC_PATHS = ["/admin/", "/static/", "/media/", "/health/"]
 
 SERVICE_TO_SERVICE_PATHS = [
-    "/api/projects/internal/",
-    "/api/tasks/internal/",
-    "/api/timelog/internal/",
+    "/api/projects/",
+    "/api/tasks/",
+    "/api/timelog/",
+    "/api/issues/",
 ]
 
 
