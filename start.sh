@@ -7,7 +7,6 @@ if [ -f /app/.env ] && [ "$DJANGO_ENV" != "dev" ]; then
 fi
 
 echo "Running migrations..."
-python manage.py makemigrations --noinput
 python manage.py migrate --noinput
 
 echo "Collecting static files..."
