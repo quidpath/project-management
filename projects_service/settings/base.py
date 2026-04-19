@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+import dj_database_url
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-projects-default-key")
@@ -88,14 +90,19 @@ WSGI_APPLICATION = "projects_service.wsgi.application"
 ASGI_APPLICATION = "projects_service.asgi.application"
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "projects_db"),
-        "USER": os.environ.get("DB_USER", "projects_user"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST", "db"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
-    }
+    "default": dj_database_url.config(
+        default=(
+            os.environ.get("DATABASE_URL")
+            or "postgresql://{user}:{password}@{host}:{port}/{name}".format(
+                user=os.environ.get("DB_USER", "projects_user"),
+                password=os.environ.get("DB_PASSWORD", os.environ.get("POSTGRES_PASSWORD", "")),
+                host=os.environ.get("DB_HOST", "db"),
+                port=os.environ.get("DB_PORT", "5432"),
+                name=os.environ.get("DB_NAME", os.environ.get("POSTGRES_DB", "projects_db")),
+            )
+        ),
+        conn_max_age=600,
+    )
 }
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
