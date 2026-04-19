@@ -21,7 +21,7 @@ class UserCacheService:
             if corporate_id:
                 headers["X-Corporate-Id"] = str(corporate_id)
             resp = requests.get(
-                f"{settings.ERP_BACKEND_URL}/api/internal/users/{user_id}/",
+                f"{settings.ERP_BACKEND_URL}/api/auth/users/{user_id}/",
                 headers=headers,
                 timeout=5,
             )
@@ -43,7 +43,7 @@ class UserCacheService:
                 return data
             headers = {"X-Service-Key": settings.PROJECTS_SERVICE_SECRET}
             resp = requests.get(
-                f"{settings.ERP_BACKEND_URL}/api/internal/corporates/{corporate_id}/",
+                f"{settings.ERP_BACKEND_URL}/api/auth/corporates/{corporate_id}/",
                 headers=headers,
                 timeout=5,
             )
