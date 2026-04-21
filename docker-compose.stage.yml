@@ -2,11 +2,11 @@ name: projects-stage
 
 services:
   db:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: postgres_projects_stage
     restart: unless-stopped
     volumes:
-      - /mnt/quidpath-projects-db-stage/postgres:/var/lib/postgresql/data
+      - /mnt/ebs/projects/postgres_data_stage:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -18,44 +18,65 @@ services:
       retries: 5
     networks:
       - projects_network
-      - quidpath_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: projects_redis_stage
+    restart: unless-stopped
+    networks:
+      - projects_network
 
   backend:
     image: ${IMAGE_TAG}
     container_name: projects-backend-stage
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8021:8007"
+      - "127.0.0.1:8021:8000"
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env
     environment:
       DATABASE_URL: ${DATABASE_URL}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_HOST: db
-      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST:-postgres_projects_stage}
+      DB_PORT: ${DB_PORT:-5432}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       SECRET_KEY: ${SECRET_KEY}
       PROJECTS_SERVICE_SECRET: ${PROJECTS_SERVICE_SECRET}
       INVENTORY_SERVICE_URL: http://inventory-backend-stage:8000
       INVENTORY_SERVICE_SECRET: ${INVENTORY_SERVICE_SECRET}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
-      ERP_BACKEND_URL: ${ERP_BACKEND_URL}
-      HRM_SERVICE_URL: ${HRM_SERVICE_URL}
-      CRM_SERVICE_URL: ${CRM_SERVICE_URL}
-      REDIS_URL: ${REDIS_URL}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      REDIS_URL: redis://redis:6379/0
       DJANGO_SETTINGS_MODULE: projects_service.settings.stage
       DJANGO_ENV: stage
     volumes:
-      - /mnt/quidpath-projects-stage-data/media:/app/media
-      - /mnt/quidpath-projects-stage-data/staticfiles:/app/staticfiles
+      - /mnt/ebs/projects/media_stage:/app/media
+      - /mnt/ebs/projects/staticfiles_stage:/app/staticfiles
+    networks:
+      - projects_network
+      - quidpath_network
+
+  celery:
+    image: ${IMAGE_TAG}
+    container_name: projects-celery-stage
+    restart: unless-stopped
+    command: celery -A projects_service worker -l info
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: redis://redis:6379/0
+      DJANGO_SETTINGS_MODULE: projects_service.settings.stage
     networks:
       - projects_network
       - quidpath_network
