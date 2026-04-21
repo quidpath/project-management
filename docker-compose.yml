@@ -52,6 +52,8 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       SECRET_KEY: ${SECRET_KEY}
       PROJECTS_SERVICE_SECRET: ${PROJECTS_SERVICE_SECRET}
+      INVENTORY_SERVICE_URL: http://inventory-backend:8000
+      INVENTORY_SERVICE_SECRET: ${INVENTORY_SERVICE_SECRET}
       REDIS_URL: redis://redis:6379/0
       DJANGO_SETTINGS_MODULE: projects_service.settings.prod
       DJANGO_ENV: prod

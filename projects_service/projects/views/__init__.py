@@ -1,13 +1,25 @@
+"""
+Projects Service Views Package
+"""
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Sum as models_sum
 from django.shortcuts import get_object_or_404
-from .models import Project, ProjectMember, Sprint, Milestone, ProjectRisk, ProjectDocument
-from .serializers import (
+from ..models import Project, ProjectMember, Sprint, Milestone, ProjectRisk, ProjectDocument
+from ..serializers import (
     ProjectSerializer, ProjectListSerializer, ProjectMemberSerializer,
     SprintSerializer, MilestoneSerializer, ProjectRiskSerializer, ProjectDocumentSerializer
+)
+
+# Import product/material views for convenience
+from .product_views import (
+    search_materials,
+    get_material,
+    list_materials,
+    get_materials_bulk,
+    check_material_stock,
 )
 
 
@@ -196,3 +208,27 @@ def project_budget(request, pk):
             (billable_amount / float(project.budget) * 100) if project.budget else 0, 1
         ),
     })
+
+
+__all__ = [
+    'ProjectListCreateView',
+    'ProjectDetailView',
+    'ProjectMemberListView',
+    'ProjectMemberDetailView',
+    'SprintListCreateView',
+    'SprintDetailView',
+    'StartSprintView',
+    'CompleteSprintView',
+    'MilestoneListCreateView',
+    'MilestoneDetailView',
+    'ProjectRiskListCreateView',
+    'ProjectRiskDetailView',
+    'ProjectDocumentListView',
+    'project_gantt',
+    'project_budget',
+    'search_materials',
+    'get_material',
+    'list_materials',
+    'get_materials_bulk',
+    'check_material_stock',
+]

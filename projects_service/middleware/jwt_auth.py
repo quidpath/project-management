@@ -28,9 +28,11 @@ class JWTAuthenticationMiddleware:
 
         service_key = request.headers.get("X-Service-Key")
         if service_key and any(path.startswith(p) for p in SERVICE_TO_SERVICE_PATHS):
-            if service_key == settings.PROJECTS_SERVICE_SECRET:
+            expected_secret = getattr(settings, "PROJECTS_SERVICE_SECRET", "")
+            if service_key == expected_secret:
                 request.user_id = None
-                request.corporate_id = request.headers.get("X-Corporate-Id")
+                # Get corporate_id from X-Corporate-ID header (case-insensitive)
+                request.corporate_id = request.headers.get("X-Corporate-ID") or request.headers.get("X-Corporate-Id")
                 request.is_service_call = True
                 return self.get_response(request)
             return JsonResponse({"error": "Invalid service key"}, status=401)

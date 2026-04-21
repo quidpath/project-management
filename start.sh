@@ -16,4 +16,4 @@ echo "Creating superuser..."
 python manage.py createsuperuser --noinput || true
 
 echo "Starting Daphne (ASGI)..."
-exec daphne -b 0.0.0.0 -p 8007 projects_service.asgi:application
+exec daphne -b 0.0.0.0 -p ${PORT:-8000} projects_service.asgi:application
